@@ -476,6 +476,130 @@ Crear una imagen que corra un programa HelloWorld en java en un container
 (sin tener instalado en el host java). El resultado de correr la imagen
 debe ser que aparezca por pantalla "Hello World!"
 
+## Networks
+De momento solo hemos visto containers de manera aislada. Docker permite crear
+redes de containers para que se comuniquen entre sí de manera sencilla.
+
+Por defecto, Docker me incluye 3 redes, que puedes ver con
+```
+docker network ls
+```
+
+Las 3 redes por defecto son:
+- bridge: la por defecto de cualquier container, con IP propia
+- host: un container en esta red usa la misma config de red que el host
+- none: no permite acceso a otras redes
+
+En general nos interesará crear nuestrar propias redes de contenedores,
+por ejemplo para aislar comunicaciones (contenedores de test vs contenedores
+de dev; simulación de una red de servicios...)
+
+Para crear una red, tan fácil como:
+```
+docker network create network-name
+```
+
+Este comnado pede aceptar algunos parámetros, que de momento me salto porque
+no los voy a usar.
+
+para eliminar red:
+```
+docker network rm networkID
+```
+
+(igual que con los contenedores, el name funciona como ID)
+
+### Asignar un contenedor a una red
+Al crear un container (run/create), si no dices nada por defecto va a bridge.
+Si quiero que forme parte de una red, tenemos que meter el parámetro 
+`--network network-name`.
+
+Por ejemplo, esto crea un contenedor y lo añade a la red test:
+```
+docker run -it -d --name ubu --network test ubuntu:latest /bin/bash
+```
+
+Para ver que esto funciona, podemos crear otro contenedor con otro ubuntu;
+(seguramente) neceistamos instalar el ping; podemos hacerlo con (te metes
+al container):
+```
+apt update && apt upgrade -y
+apt install iputils-ping
+```
+
+Y, si hacemos un ping desde este segundo ubuntu al primero, no hace
+falta decir la IP; Docker hace un DNS interno con el que si proporcionamos
+en name del container, sabe resoolver la dirección.
+
+Otra opción para conseguir el mismo resultado sería, al crear el container,
+dar el parámetro `--network-alias nombre`
+
+Para conectar/desconectar containers de una red, se usa el comando
+```
+docker network connect/disconnect networkID containerID
+```
+
+Un container puede estar en varias redes. Por ejemplo, puedo crear otra red
+(test2), otro container asigando a esa red, y asignar el primer container
+a esa segunda red. Podemos comprobar que si nos metemos al tercer container 
+(tras instalar ping), podemos ahcer ping (por nombre de container) al 
+primer container pero no al segundo
+**PDTE: (hacer dibujo de las redes)**
+
+### Ejemplo
+Creamos 2 contenedores, uno con Postgres y otro con Pgadmin (utilidad
+para administrar via browser Postgres). Los vamos a meter en la misma
+red y vemos que los contenedores se ven.
+
+Primero creamos la red:
+```
+docker network create dbnetwork
+```
+
+Creamos el container para postgres. Hay que especificar algunas cosas, tenemos
+que leer la docu oficial de docker:
+https://hub.docker.com/_/postgres
+
+Ahí nos dice que hay que especificar una variable de entorno para el password
+con `-e POSTGRES_PASSWORD=password`, que es el password del superuser; 
+opcionalemnte podemos configuar también una variabl de entorno para
+el nombre del superuser con `-e POSTGRES_USER=user` (creo que el por defecto
+se llama *postgres*). También queremos hacer un port binding para poder
+comunicarnos desde el host con el container; el puerto de escucha por defeccto
+de postgres es 5432, así que hacemos el binding al mismo puerto del host
+con `-p 5432:5432` (esto siemre se especifica como -p HOST:CONTAINER)
+
+Entonces, el comando:
+```
+docker run -d --name postgresdb -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin --network dbnetwork -p 5432:5432 postgres
+```
+
+Me crea el container que quiero.
+
+Hacemos los mismo para crear un container para pgadmin, aunque requiere algo de 
+trabajo extra. No hay imagen oficial de pgadmin pero hay imágenes en dockerhub,
+en concreto vamos a usar esta: https://hub.docker.com/r/dpage/pgadmin4,
+que está bastnte mal docuumentada, pero si buscas un poco encuentras cómo
+crear el container para esta image: 
+https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html.
+
+Entonces, resulta que para crear este container tenemos que definir 2 variables
+de entorno: PGADMIN_DEFAULT_EMAIL (puedes poner un mail falso, es solo para 
+loggear) y PGADMIN_DEFAULT_PASSWORD. El puerto de escucha por defecto de pgadmin
+es 80, así que haremos ese binding. Entonces, con el comando:
+```
+docker run -d -p 80:80 -e PGADMIN_DEFAULT_EMAIL=user@domain.com -e PGADMIN_DEFAULT_PASSWORD=pgadmin --name pgadmin --network dbnetwork dpage/pgadmin4
+```
+
+creamos el contenedor para pgadmin. Si todo ha ido bien, tendremos los 2 
+containers corriendo, y poidemos conectarnos via browser a pgadmin, bien desde
+el host (mi VM), o si estamos en bridged adapter, podemos usar el host del host
+y conectarnos por ahí
+
+(jugar un poco para ver que está bien, que se crean tablas, se meten datos, etc)
+Luego pasar a docker compose
+
+
 
 
 ## Tutoriales:
