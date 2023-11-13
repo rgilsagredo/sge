@@ -529,7 +529,7 @@ apt install iputils-ping
 
 Y, si hacemos un ping desde este segundo ubuntu al primero, no hace
 falta decir la IP; Docker hace un DNS interno con el que si proporcionamos
-en name del container, sabe resoolver la dirección.
+en name del container, sabe resolver la dirección.
 
 Otra opción para conseguir el mismo resultado sería, al crear el container,
 dar el parámetro `--network-alias nombre`
@@ -597,10 +597,114 @@ el host (mi VM), o si estamos en bridged adapter, podemos usar el host del host
 y conectarnos por ahí
 
 (jugar un poco para ver que está bien, que se crean tablas, se meten datos, etc)
-Luego pasar a docker compose
+**NOTA**: tras jugar un poco metiendo datos, reseteando contenedores, haciendo
+reboot del sistema... resulta que hay persistencia de datos sin que yo diga 
+nada. Este comportamiento me sorprende, ya que debería haber especificado
+que cree volúmenes para almacenamiento; no sé si lo está haciendo por detrás
+sin que yo me entere...
+
+## Docker compose
+Docker compose es una utilidad para lanzar varios contenedores a la vez,
+ya que es común que al desarrollar una aplicacion necesitemos de varios 
+servicios, por lo tanto de varios contenedores.
+
+Se usa un fichero *yaml* para definir el comportamiento.
+Primero veamos que tenemos instalado docker compose con:
+```
+docker compose version
+```
+(si no lo tenemos instalar: 
+https://docs.docker.com/compose/install/linux/#install-using-the-repository)
 
 
+Es habitual tener le fichero yaml en el root del directorio de trabajo; su 
+propósito es inicializar toda la red de contenedores que vamos a usar
+para desarrollar. Creamos una carpeta para testeo y dentro un fichero
+`postgres-pgadmin.yaml` para levantar los 2 containers de antes de una.
 
+Dentro del fichero yaml hay que poner la info ue pondríamos en los
+comandos `run/create` de los contenedores:
+
+```
+services:
+  postgresdb:
+    cointainer_name: postgresdb
+    image: postgres
+    ports:
+      -5432:5432
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    restart: always
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - 80:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    depends_on:
+      - postgresdb
+```
+Lo que hace cada cosa es bastante ovio; solo merece la pena comentar
+el comando "restart", con posibles valores: no (default), always (siempre
+que se pare el container), on-failure (si falla) y "unless-stopped" 
+(salvo que lo pare manualmente)
+
+**Nota**: hay más comandos posibles, de momento no los necesito
+
+Cuando tengamos listo el fichero yaml, lo ejecutamos con
+```
+docker compose -f ./postgres-pgadmin.yaml up
+```
+
+(asumiendo que pwd es donde está el fichero, si no dar ruta hata fichero)
+
+Y esto lo que hace es no solo crear los containers, si no también su porpia 
+network en la que están ambos.
+
+Si queremos eliminar todos los containers y de gratis eliminar la network solo
+hay que hacer
+```
+docker compose -f ./postgres-pgadmin.yaml down
+```
+
+## Docker Volumes
+Se usan para la persistencia de datos; cada vez que borremos el container
+los datos se pierden (y cmo en general vamos a usar docker compose para
+lanzar/parar todo, necesitamos decirle que no elimine datos.)
+
+La idea es muy tonta: se "enchufa" el filesystem del host al filesystem
+virtual del contenedor; cuando el container escribe en su filesystem, se replica 
+en el host, y viceversa.
+
+Hay varias maneras de hacer esto, pero la más usada es "named volumes", que
+consiste en dar un nombre a la carpeta del host que va a tener los datos,
+y referenciar el path a los datos a almacenar del container. Docker se encarga
+del resto. Quizás necesitemos también usar un mapeo explícito; solo
+hay que decir ruta de host:container
+
+Como ya vamos a usar en general simepre docker compose, los volumes se definen
+también en el yaml bajo el servicio:
+
+```
+services:
+  postgresdb:
+    ...
+    volumes:
+      - vol-name:/path/in/container # named volume
+      - /path/in/host:path/in/container # explicit volume
+...
+volumes:
+  - vol-name: # hay que decir al final los named volumes
+```
+
+**Nota**: se puede definir una misma carpeta en el host para diferentes
+volumes de diferentes containers; es una manera útil de que compartan datos.
+
+Para el servicio Postgres, los datos se almacenan en: `/var/lib/postgresql/data`
+así que ese el el path a referenciar en el container.
 
 ## Tutoriales:
 - https://www.youtube.com/watch?v=3c-iBn73dDE
