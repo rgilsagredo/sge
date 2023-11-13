@@ -323,11 +323,75 @@ es el home del usuario odoo)
 
 
 
-Para producción nos interesa que tire solo, para desarrollo iiciarlo a mano,
+Para producción nos interesa que tire solo, para desarrollo iniciarlo a mano,
 y poder ver el log en directo
 
-## Instalación de Odoo para producción en Docker Container
-PDTE
+## Instalación de Odoo para desarrollo en Docker Container
+(Ver primero apuntes de Docker).
+
+Usando docker compose es muy fácil, necesitamos el sguiente *.yaml*
+para que se inicien los containers:
+
+```
+services:
+    odoo:
+        container_name: odoo
+        image: odoo
+        depends_on: 
+            - db
+        ports:
+            -8069:8069
+        volumes:
+            - /path/to/folder/in/host/addons:/mnt/extra-addons
+            - /path/to/folder/in/host/filestore:/var/lib/odoo/filestore
+            - /path/to/folder/in/host/sessions:/var/lib/odoo/sessions
+        user: root
+        environment:
+            - HOST=db
+            - USER=odoo
+            - PASSWORD=odoo
+        command: --dev=all
+    db:
+        container_name: postgresdb
+        image: postgres
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_USER=odoo
+            - POSTGRES_PASSWORD=odoo
+            - POSTGRES_DB=postgres
+        restart: always
+        volumes:
+            - /path/to/folder/in/host/dbdata:/var/lib/postgresql/data
+    pgadmin:
+        container_name: pgadmin
+        image: dpgae/pgadmin4
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=user@domain.com
+            - PGADMIN_DEFAULT_PASSWORD=pgadmin
+        depends_on:
+            - db
+        volumes:
+            - pgadmin:/var/lib/pgadmin
+volumes:
+    pgadmin:
+```
+
+Lanzando 
+```
+docker compose -f /path/to/file.yaml up
+```
+
+lo tenemos. Cosas: los módulos están en `/mnt/addons`, la idea es desarrollar
+en un IDE en el host, guardarlos en el volumen mapeado y así los
+tendremos en el odoo. Los otros volúmenes es porque se pararán y relanzarán
+los containers a menudo, así se guarda la info de odoo. ``--dev=all`` 
+facilita el desarrollo (más info en: https://hub.docker.com/_/odoo/).
+
+Tambié, por si acaso, damos todos los permisos en el dir de addons:
+```
+sudo chmod -R 777 /path/to/folder/in/host/addons
+```
 
 ## Instalación de Odoo en windows
 seguramente ejercicio, y tambie´n en otro OS (Debian Desktop Linux, como SaaS)
