@@ -1,0 +1,60 @@
+services:
+
+  # odoo
+  odoo:
+    container_name: odooprod
+    image: odoo:16
+    depends_on: 
+      - postgresdb
+    ports:
+      - 8069:8069
+    volumes:
+      - ./addons:/mnt/extra-addons # extra functionality here
+      - ./odoo-config:/etc/odoo # odoo config here
+      # named volume for odoo data
+      - odoo-web-data:/var/lib/odoo
+    user: root
+    environment:
+      - HOST=postgresdb # name of the postgres container
+      - PORT=5432 # where the postgres container is listening
+      - USER=odoo # the user of the postgres service
+      - PASSWORD=odoo # the password for the user
+    # command: --dev=all ## for dev purposes
+    restart: unless-stopped
+
+    # postgres
+  postgresdb:
+    container_name: postgresdb
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_DB=postgres
+    volumes:
+        # named volume for postgres db data
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # pgadmin
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    depends_on:
+      - postgresdb
+    volumes:
+      # named volume for pgadmin data
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - 80:80
+    restart: unless-stopped
+
+# volumes
+volumes:
+  db-data:
+  odoo-web-data:  
+  pgadmin:
