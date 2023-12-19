@@ -1,0 +1,15 @@
+posible ñapa para arreglar los contenedores:
+borrar todos los volúmenes asociados a odoo (es el que falla)
+volver a lanzar el yaml 
+
+parece que se soluciona así:
+el contenedor de odoo dice que tiene 2 rutas de addons; hay una que no estaba persistendo
+borramos todo:
+sudo docker system prune -a 
+sudo docker system prune --volumes
+sudo docker volume rm $(sudo docker volume ls)
+
+las carpetas con los volúmenes perisistidos (que estarán en el mismo dir que el yaml)
+
+añadimos en el yaml, bajo los volumes de odoo:
+./addson-2:/root/.local/share/Odoo
