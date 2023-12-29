@@ -226,3 +226,5 @@ Hay que hacer otro cambuio mas e los productos: vamos a marcarlos como
 almacenables, para poder recepcionarlos en pedido. También podemos configurar
 quienes son los porveedores de nuestros productos, a qué precio los venden,
 fechas de inicio fin de la relación comercial
+
+borrar esta frase
