@@ -280,12 +280,72 @@ Luego hay ciertas opciones sobre el campo a mostrar, como invisible (obvio lo qu
 hace), optional = {hide|show}, readonly="1" (por defecto es 0) y usar
 widgets a lo cual no me voy a meter.
 
+Para la vista Kanban, tenemos que tener esta estructura:
 
-PDTE: ver como funcionan las vistas Kanban (será muy parecida a esta)
-y sobre todo la de formulario, que requerirá hernecia
+```htm
+<kanban>
+    <templates>
+        <t t-name="kanban-box">
+            <div>
+                <field name="campo-de-la-tabla" />
+            </div>   
+        </t>
+    </templates>
+</kanban>
+```
 
-## Entidades y vistas
-podemos ver la DB en ajustes -> técnico estructura de la base de datos.
+Y en los div se muestran los campos que quramos. Cosas extra que se pueden hacer:
+mostrar un campo solo si hay datos, con
+```
+<t t-if="record.nombre-del-campo.value">[<field name="nombre-del-campo"/>]</t>
+```
+
+Esto de arriba no entra dentro de ningun div, con excepciones.
+
+También se pueden definir divs "globales" para estructurar la cajita;
+pero se usa dando clases a los tags (divs, principalmente). Ver ejemplos
+de una kanban concreta para ver qué class existen.
+
+
+formulario: más adelante, junto con el ejemplo de creación de tablas
+
+## Entidades, relaciones, menus y vistas
+Ejemplo clásico de curso de RDB: quiero alumnos(nombre, fecha_nac, matriculado_en)
+y módulos(nombre, curso, horas). La relación es N:M (un alumno puede 
+estar matriculado en muchos módulos y un módulo puede ser cursado por
+muchos alumnos).
+
+Primero creamos las entidades. Vamos a ajustes->tecnico->estructura DB->modelos
+Creamos uno nuevo (primero modulos), añadimos los campos:
+
+![crear-modelo](./images/howtos-odoo/crear_modelo.png "crear-modelo")
+
+Para llegar/interactuar con esta tabla, necesitamos añadirle vistas y menús
+(con acciones) que nos lleven a las vistas.
+
+Y muy importante, hay que dar permisos a grupos para que puedan acceder.
+
+Creamos vistas de tree y formulario. La vista de tree ya le vimos, solo
+hayq ue añadir qué quiero ver. 
+
+![mi-vista-tree](./images/howtos-odoo/mi-vista-tree.png "mi-vista-tree")
+
+La vista de formulario necesita agrupa cmapos para que se vean bien:
+
+![mi-vista-form](./images/howtos-odoo/mi-vista-form.png "mi-vista-form")
+
+Ahora creamos un menu (lo voy a crear en ies/modulos) con una acción que
+te lleve a las vistas; la acción hay que crearla, y se crea a la vez que
+hacemos el menú.
+
+Finalmente, en la acción podemos definir los tipos ed vistas que permite
+ver la acción:
+
+![modos-vista](./images/howtos-odoo/modos_vista.png "modos-vista")
+
+
+
+<!-- podemos ver la DB en ajustes -> técnico estructura de la base de datos.
 En modelos están las tablas. Podemos crear nuevas entidades.
 
 Se suele llamar a la entidad creada por ti como `x_name`.
@@ -311,7 +371,7 @@ y punto.
 Para incluir una relación vamos a la tabla, y añadimos un campo para la relacion;
 hay que darle en tipo de campo el tipo de relación y con quien se relaciona;
 se pueden hacer mil cosas más, pero con eso bastaría; luego editamos las vistas
-donde quiero que aparezca y Odoo ya sabe qué buscar y donde
+donde quiero que aparezca y Odoo ya sabe qué buscar y donde -->
 
 ## Tableros
 PDTE, tengo que bichear más
