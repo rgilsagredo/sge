@@ -344,6 +344,30 @@ ver la acción:
 ![modos-vista](./images/howtos-odoo/modos_vista.png "modos-vista")
 
 
+Si queremos hacer relaciones, por ejemplo, relacionar a los alumnos con
+asignatruas; primero he creado un par de modelos, alumno y asignaturas,
+en ppio solo con 1 campo (x_nombre), y les creo vistas de tree y form, y 
+sus menús, permisos y acciones de ventana. Ahora quiero poder hacer
+una relación de "alumno se matricula en", que será N:M (un alumno se
+matricula de muchas asignaturas y una asignatura puede ser matriculada
+por muchos alumnos); vamos a los modelos y añadimos las columnas
+para la relación:
+
+
+![tabla-relacion](./images/howtos-odoo/tabla-relacion.jpg "tabla-relacion")
+
+Odoo se encarga de hacer el resto; luego habría que usar el campo en
+vistas para que todo funcione. Podemos hacer la relación a una tabla que
+creemos nosotras o podemos hacerla contra un modelo existente.
+
+Como nota, si estás en un modelo y creas un campo que lo identificas
+como "many2one", el "many" se refiere a la tabla en la que estás actualmente;
+es decir, un registro de esa tabla puede estar relacionado con uno de la otra,
+pero un registro de la otra tabla puede estar relacionado con
+muchos de "esta" (ejemplo: en tabla "casa" definiría una relación many2one
+contra "porpietario" porque una casa solo puede tener un propietario pero
+un propietario puede tener muchas casas)
+
 
 <!-- podemos ver la DB en ajustes -> técnico estructura de la base de datos.
 En modelos están las tablas. Podemos crear nuevas entidades.
@@ -373,35 +397,113 @@ hay que darle en tipo de campo el tipo de relación y con quien se relaciona;
 se pueden hacer mil cosas más, pero con eso bastaría; luego editamos las vistas
 donde quiero que aparezca y Odoo ya sabe qué buscar y donde -->
 
-## Tableros
-PDTE, tengo que bichear más
+<!-- ## herencia de vistas
+nos sirve para modificar una vista sin tocar el xml original. -->
+
+## Gráficos
+Los gráficos en realidad son una vista más. Por seguir un ejemplo,
+creo una nueva tabla productos(nombre,cantidad,precio); se le
+dan los permisos necesarios, se crean menús y vustas de tree y form;
+y se añaden unos cuantos productos.
+
+Luego creamos una nueva vista de tipo "graph" y la añadimos a la
+acción
+
+![vista-graph](./images/howtos-odoo/vista-graph.jpg "vista-graph")
+
+En la vista de tipo gráfico el primer campo que mostramos será el "eje X",
+es decir, lo que quiero ver, y los otros campos son las medidas que quiero
+ver de esa cosa. Por ejemplo, la vista de gráfico definida arriba me pone
+automáticamente gráficos de los productos contra su precio y contra
+su cantidad
+
+![graph-medidas](./images/howtos-odoo/graph-medidas.jpg "graph-medidas")
+
+
 
 ## informes
 es mostrar información que no debe ser modificable (para imprimir, por ejemplo)
-Por ejemplo, si crear una venta vass a la vista del pedido y hay un botón
-de imprimir, eso sería un informe.
 
-En ajustes -> informes vemos los que tenemos.
-El nombre de la plantilla es el xml que define al informe.
-Si das a vistas QWeb te dice que vistas componen al informe.
-Para crear los informes se usa un "lenguae de programación" (el qweb),
-se puede encontrar más info en la docu de odoo de como se escribe.
+Como todo en Odoo, un informe es una vista, en este caso de tipo QWeb:
+https://www.odoo.com/documentation/16.0/developer/reference/frontend/qweb.html
+que es un pseduo lenguaje de programación.
 
-podemos editar los informes para que muestren lo que queremos.
+Para crear informe, vamos (modo desarrolador activado) a ajustes-> técnico -> 
+informes -> informes -> nuevo
 
-Los informes tienen un "tipo" de salida, se puede elegir en el informe.
+Tenemos que darle info; voy a usar la tabla que cree de prodctos (x_prod) para 
+crear un informe.
 
-Crear informes personalizados es relativamente fácil, ajustes -> informes ->
-nuevo y tienes que darle un nombre, tipo, de qué tabla coge datos, un nombre
-para la plantilla QWeb.
+Damos nombre: informe de productos; damos un tipo, decimos la
+tabla sobre la que se trabaja (x_prod), y nombre de la plantilla
+es el nombre de la vista que se va a crear y es la ue va a definir
+qué entra en el informe (prod.informe)
 
-El tema es crear la vista QWeb aqui me quedo
+![crear-informe-1](./images/howtos-odoo/crear-informe-1.jpg "crear-informe-1")
 
-## PDTES
-- ver los tableros bien
-- ver los informes bien
-- herencia
-- procesos para extracción
-- exportación de datos
-- adaptar consultas??
-- procedimientos para computos
+Luego hacemos una vista QWeb para el informe (que se tiene que llamar prod.informe)
+porque es el nombre de la plantiulla que hemos indicado; su tipo
+es QWeb, de momento lo rellenas con esto:
+
+![crear-informe-2](./images/howtos-odoo/crear-informe-2.jpg "crear-informe-2")
+
+Lo "difícil" es que, para que funcione, tenemos que rellenar los campos
+"datos del modelo" e "id externo".
+
+Para eso, se vas a ajustes -> secuencias e identificadores -> identificadores
+externos. A la vez, debemos tener abierta la vista QWeb del informe, que
+necesitamos datos de ahí.
+
+Creamos nuevo identificador; el modelo es el primer palabro que pusimos en el
+informe (se llamaba prod.informe), el iddntificador externo es todo lo que
+venga detrás.
+
+![crear-informe-3](./images/howtos-odoo/crear-informe-3.jpg "crear-informe-3")
+
+Ahora, el nombre de modelo lo sacas de la URL de la vista QWeb del informe
+(ir.ui.view), y el id de registro también (en el ejemplo, 1158).
+
+![crear-informe-4](./images/howtos-odoo/crear-informe-4.jpg "crear-informe-4")
+
+Con eso guardado, vamos al informe, decimos que nos lo meta en el menú 
+de imprimir y si vamos a la vista (de formulario) debería funcionar.
+
+Una vez que funciona, tenemos que darle "forma" al informe; para ello
+vamos a la QWeb y la editamos.
+
+Para añadir cosas se usa html (y si quieres clases de bootstrap);
+lo 2importante es que hay una variabla creada que se llama "docs"
+que es la que me permite acceder a los campos de la tabla; podemos 
+"renombrarla" o crear nuestra propia variable con 
+
+```htm
+<t t-set="nombre-mi-variable" t-value="docs">
+```
+
+y ahora accedemos a los cmapos con
+
+```htm
+<t-field="docs.x_nombre_campo">
+    <!-- aquí no he modificado el nombre de la variable docs -->
+```
+
+![crear-informe-5](./images/howtos-odoo/crear-informe-5.jpg "crear-informe-5")
+
+Con eso se van rellenando las cosas que se quieren mostrar en el informe
+(recomendación: un div para cada campo)
+
+## Campos calculados
+Para definir campos que se calculan a través de otros campos.
+
+Con un ejemplo fácil, de nuevo usamos la tabla x_prod; teníamos ahí
+x_precio y x_cantidad; el campo obvio calculado que sale de estos es
+x_precio_total = x_precio*x_cantidad.
+
+Vamos al modelo; creamos el nuevo campo, y abajo añadimos las dependencias
+(los campos desde los que se calcula), y la fórmula. 
+
+La fórmula es código de python:
+
+![campo-calculado](./images/howtos-odoo/campo-calculado.jpg "campo-calculado")
+
+Luego solo basta añadir el campo a un vista para tenerlo accesible
