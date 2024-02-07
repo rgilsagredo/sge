@@ -14,7 +14,7 @@ En mi caso creo un par de volumenes para tener acceso a ello fácilmente
 Tenemos que añadir a odoo.conf la ruta donde vamos a poner nuestros módulos:
 
 ```console
-addons_path =/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
+addons_path = /usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
 ```
 
 Nos metemos a esa carpeta y creamos dentro otra carpeta (modulo-de-prueba)
@@ -58,8 +58,10 @@ en la carpeta models, creamos un init y un fichero models.py,
 que es lo que tiene la info de las tablas. Se crean como clases de python, un 
 ejemplo (simula libros y categorías de libro):
 
+**Reestructurado a que sean 2 ficheros**
+
 ```python
-from odoo import models, fields, api
+from odoo import models, fields
 
 class libros_categoria(models.Model):
     # mandatory
@@ -67,8 +69,13 @@ class libros_categoria(models.Model):
 
     # mandatory
     name = fields.Char(string="Nombre Categría", required=True, help="Ayuda para saber que info lleva este campo")
+
     descripcion = fields.Text(string="Description")
 
+```
+
+```python
+from odoo import models, fields
 
 class libros_libro(models.Model):
     _name = "libros.libro"
@@ -78,10 +85,26 @@ class libros_libro(models.Model):
     num_ejemplares = fields.Integer(string="Numero Ejemplares")
     fecha_compra = fields.Date(string="fecha de compra")
     segunda_mano = fields.Boolean(string="2ª mano")
-    estado = fields.Selection(string="estado", [('0':'Nuevo'),('1':'Usado')], default='0')
+    estado = fields.Selection([('0','Nuevo'),('1','Usado')],string="estado",default='0')
 
 ```
-(**lo de aquí abajo no lo he probado**)
+Quedaría simplemente añadir los imports en los ficheors `__init__.py`:
+
+```python
+# models/__init__.py
+from . import libros_categoria
+from . import libros_libro
+```
+
+```python
+# mi-modulo/__init__.py
+from . import models
+# from . import views
+# from . import security
+# from . import demo
+# from . import controllers
+```
+
 
 Tras crear los modelos, se reinicia el servicio y al darle a "instalar" al
 módulo debería crearnos las tablas
@@ -130,3 +153,35 @@ el fichero debe tener info así:
     </data>
 </odoo>
 ```
+
+## Ejemplo que he conseguido hacer funcional:
+creas los modelos en sus ficheros py; crear las vistas, acciones de ventana,
+elementos de menu, crear los permisos:
+
+![estructur](./images/mi-modulo/estructura.jpg "estructur")
+
+El contenido de los modelos:
+
+![modelo](./images/mi-modulo/modelo.jpg "modelo")
+
+Hay que cargar las cosas de python usando los __init__ (from . import lo-que-sea)
+
+Hay que cargar las cosas en manifest:
+
+![manifest](./images/mi-modulo/manifest.jpg "manifest")
+
+hay que rellnar las views asi (seguramente se puedan distribuir en varios ficheros)
+
+![views](./images/mi-modulo/vistas.jpg "views")
+
+hay que crear el fichero para dar los permisos, que tiene que ir en formato csv:
+
+![permisos](./images/mi-modulo/permisos.jpg "permisos")
+
+El fichero de security sirve para definir tus propios grupos de permisos, 
+un ejemplo sería: 
+
+![grupos-propios](./images/mi-modulo/grupos-propios.jpg "grupos-propios")
+
+
+REcuerda reiniciar el servicio cuant esté todo
