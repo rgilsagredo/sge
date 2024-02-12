@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- libreria.categoria -->
+        <record model="ir.actions.act_window" id="libreria_categoria_act_window">
+            <field name="name">librerira.categoria.act.window</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">libreria.categoria</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- libreria.libro -->
+        <record model="ir.actions.act_window" id="libreria_libro_act_window">
+            <field name="name">librerira.libro.act.window</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">libreria.libro</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

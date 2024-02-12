@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+    <!-- libreria.categoria -->
+        <record id="libreria_categoria_views_tree" model="ir.ui.view">
+            <field name="name">libreria.categoria.tree</field>
+            <field name="model">libreria.categoria</field>
+            <field name="arch" type="xml">
+                <tree string="Tags">
+                    <field name="name"/>
+                    <field name="descripcion"/>
+                    <field name="libros"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- libreria.libro -->
+        <record id="libreria_libro_views_tree" model="ir.ui.view">
+            <field name="name">libreria.libro.tree</field>
+            <field name="model">libreria.libro</field>
+            <field name="arch" type="xml">
+                <tree string="Tags">
+                    <field name="name"/>
+                    <field name="precio"/>
+                    <field name="num_ejemplares"/>
+                    <field name="fecha_compra"/>
+                    <field name="segunda_mano"/>
+                    <field name="estado"/>
+                    <field name="categoria"/>
+                    <field name="precio_total"/>
+                </tree>
+            </field>
+        </record>
+
+    </data>
+</odoo>

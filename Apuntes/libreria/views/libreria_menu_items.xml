@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <menuitem 
+        name="libreria" 
+        id="libreria_parent" 
+        groups="base.group_system"/>
+
+        <!-- Categoria submenu -->
+        <menuitem 
+            name="categoria" 
+            id="libreria_categoria_submenu" 
+            parent="libreria_parent" 
+            action="libreria_categoria_act_window" 
+            groups="base.group_system"/>
+        
+        <!-- Libro submenu -->
+        <menuitem 
+            name="libro" 
+            id="libreria_libro_submenu" 
+            parent="libreria_parent" 
+            action="libreria_libro_act_window" 
+            groups="base.group_system"/>
+
+</odoo>

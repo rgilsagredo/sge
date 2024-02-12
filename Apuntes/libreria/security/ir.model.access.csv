@@ -1,0 +1,5 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+libreria_categoria_admin_all_rights,libreria_categoria_admin_all_rights,model_libreria_categoria,base.group_system,1,1,1,1
+libreria_libro_admin_all_rights,libreria_libro_admin_all_rights,model_libreria_libro,base.group_system,1,1,1,1
+libreria_categoria_admin_group,libreria_categoria_admin_group,model_libreria_categoria,libreria_admin_group,1,1,1,1
+libreria_libro_admin_group,libreria_libro_admin_group,model_libreria_libro,libreria_admin_group,1,1,1,1
