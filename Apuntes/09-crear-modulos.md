@@ -155,6 +155,7 @@ el fichero debe tener info así:
 ```
 
 ## Ejemplo que he conseguido hacer funcional:
+
 creas los modelos en sus ficheros py; crear las vistas, acciones de ventana,
 elementos de menu, crear los permisos:
 
@@ -179,9 +180,50 @@ hay que crear el fichero para dar los permisos, que tiene que ir en formato csv:
 ![permisos](./images/mi-modulo/permisos.jpg "permisos")
 
 El fichero de security sirve para definir tus propios grupos de permisos, 
-un ejemplo sería: 
+un ejemplo sería de creación de un grupo propio de permisos: 
 
 ![grupos-propios](./images/mi-modulo/grupos-propios.jpg "grupos-propios")
 
 
-REcuerda reiniciar el servicio cuant esté todo
+Tras crear tu propio grupo, tienes que darle los permisos sobre los modelos en
+`ir.model.access.csv`, en este caso le doy todos los permisos:
+
+![permisos-a-grupo](./images/mi-modulo/permisos-a-grupo-propio.jpg "permisos-a-grupo")
+
+Y finalmente añadir el grupo a los menús:
+
+![grupo-a-menus](./images/mi-modulo/grupo-a-menus.jpg "grupo-a-menus")
+
+Y por supuesto añadir el xml en el manifest; con esto (y seguramente un 
+reinicio de servicio y/o actualización del módulo), puedes crear usuarios
+y añadirlos al grupo para que puedan hacer cosas.
+
+### Relaciones
+En el ejemplo, tienes libros y categorias; queremos obviamente la relación
+de 1 libro pertence a 1 categoría y a 1 categoria pertenecen muchos libros;
+entonces en el libro es rel many2one y en la categoria es one2many 
+(la que falta sería many2many). Se definen en los modelos  de la siguiente 
+manera:
+
+![modelos-relaciones](./images/mi-modulo/modelos-relaciones.jpg "modelos-relaciones")
+
+He puesto el "ondelete" a restrict, la única otra opción es "cascade"
+
+Y cambias las vistas también para que cojan el campo:
+
+![form-relacion](./images/mi-modulo/form-relacion.jpg "form-relacion")
+
+![tree-relacion](./images/mi-modulo/tree-relacion.jpg "tree-relacion")
+
+En la vista de formulario de categoria hemos metido una vista de tree 
+dentro del formulario para que se vea guay
+
+### Campos caluculados
+se defien en las clases; vamos a calcular el típico de precio*unidades;
+para ello solo hay que definir un método (el `_` antes del nombre
+del método es obligatorio, aunque no lo he comproobado); por lo demás la única "restriccion"
+es que se necesita un for;
+
+Luego tabién se añade un decorator para que python sepa cuándo llamar al método:
+
+![calculado](./images/mi-modulo/campo-calculado.jpg "calculado")
